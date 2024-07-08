@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 function Header(props) {
   return (
     <header>
@@ -24,7 +26,8 @@ function Nav(props) {
         href={"/read/" + topic.id}
         onClick={(e) => {
           e.preventDefault();
-          props.onChangeMode(e.target.id);
+          // props.onChangeMode(e.target.id); // 이대로 사용하면 문자열이 된다.
+          props.onChangeMode(Number(e.target.id));
         }}
       >
         {topic.title}
@@ -58,26 +61,47 @@ function Article(props) {
 }
 
 function App() {
+  const [mode, setMode] = useState("WELCOME");
+  const [id, setId] = useState(null);
+
   const topics = [
     { id: 1, title: "html", body: "html is ..." },
     { id: 2, title: "css", body: "css is ..." },
     { id: 3, title: "js", body: "js is ..." },
   ];
+
+  let content = null;
+  if (mode === "WELCOME") {
+    content = <Article title="Welcome" body="Hello, REACT!"></Article>;
+  } else if (mode === "READ") {
+    let title,
+      body = null;
+
+    topics.forEach((t) => {
+      if (t.id === id) {
+        title = t.title;
+        body = t.body;
+      }
+    });
+    content = <Article title={title} body={body}></Article>;
+  }
+
   return (
     <div>
       <Header
         title="REACT"
         onChangeMode={() => {
-          alert("header!");
+          setMode("WELCOME");
         }}
       ></Header>
       <Nav
         topics={topics}
         onChangeMode={(id) => {
-          alert(id);
+          setMode("READ");
+          setId(id);
         }}
       ></Nav>
-      <Article title="Welcome" body="Hello, REACT!"></Article>
+      {content}
     </div>
   );
 }

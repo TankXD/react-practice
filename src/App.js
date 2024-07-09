@@ -86,6 +86,49 @@ function Create(props) {
   );
 }
 
+function Update(props) {
+  const [title, setTitle] = useState(props.title);
+  const [body, setBody] = useState(props.body);
+  return (
+    <article>
+      <h2>Update</h2>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const _title = e.target.title.value;
+          const _body = e.target.body.value;
+          props.onUpdate(_title, _body);
+        }}
+      >
+        <p>
+          <input
+            type="text"
+            name="title"
+            placeholder="title"
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+            }}
+          ></input>
+        </p>
+        <p>
+          <textarea
+            name="body"
+            placeholder="body"
+            value={body}
+            onChange={(e) => {
+              setBody(e.target.value);
+            }}
+          ></textarea>
+        </p>
+        <p>
+          <input type="submit" value="create"></input>
+        </p>
+      </form>
+    </article>
+  );
+}
+
 function App() {
   const [mode, setMode] = useState("WELCOME");
   const [id, setId] = useState(null);
@@ -98,6 +141,7 @@ function App() {
   ]);
 
   let content = null;
+  let contextControl = null;
   if (mode === "WELCOME") {
     content = <Article title="Welcome" body="Hello, REACT!"></Article>;
   } else if (mode === "READ") {
@@ -111,18 +155,59 @@ function App() {
       }
     });
     content = <Article title={title} body={body}></Article>;
+    contextControl = (
+      <li>
+        {" "}
+        <a
+          href={"/update/" + id}
+          onClick={(e) => {
+            e.preventDefault();
+            setMode("UPDATE");
+          }}
+        >
+          UPDATE
+        </a>
+      </li>
+    );
   } else if (mode === "CREATE") {
     content = (
       <Create
         onCreate={(_title, _body) => {
           const newTopic = { id: nextId, title: _title, body: _body };
           setTopics([...topics, newTopic]);
-          setId(nextId);
-          setMode("READ");
 
-          setNextId(nextId + 1);
+          setId(nextId); // id를 현재 생성한 id로 설정
+          setMode("READ"); // 생성한 글을 바로 읽기 모드로 전환
+
+          setNextId(nextId + 1); // 다음 생성할 id를 설정
         }}
       ></Create>
+    );
+  } else if (mode === "UPDATE") {
+    let title,
+      body = null;
+
+    topics.forEach((t) => {
+      if (t.id === id) {
+        title = t.title;
+        body = t.body;
+      }
+    });
+    content = (
+      <Update
+        title={title}
+        body={body}
+        onUpdate={(_title, _body) => {
+          const newTopics = topics.map((t) => {
+            if (t.id === id) {
+              return { id: id, title: _title, body: _body };
+            }
+            return t;
+          });
+          setTopics(newTopics);
+          setMode("READ");
+        }}
+      ></Update>
     );
   }
 
@@ -142,15 +227,20 @@ function App() {
         }}
       ></Nav>
       {content}
-      <a
-        href="/create"
-        onClick={(e) => {
-          e.preventDefault();
-          setMode("CREATE");
-        }}
-      >
-        Create
-      </a>
+      <ul>
+        <li>
+          <a
+            href="/create"
+            onClick={(e) => {
+              e.preventDefault();
+              setMode("CREATE");
+            }}
+          >
+            Create
+          </a>
+        </li>
+        {contextControl}
+      </ul>
     </div>
   );
 }

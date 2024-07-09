@@ -61,6 +61,8 @@ function Article(props) {
 }
 
 function Create(props) {
+  // let error = null;
+  const [error, setError] = useState(null);
   return (
     <article>
       <h2>Create</h2>
@@ -69,7 +71,14 @@ function Create(props) {
           e.preventDefault();
           const title = e.target.title.value;
           const body = e.target.body.value;
-          props.onCreate(title, body);
+          if (title === "" || body === "") {
+            // alert("タイトルと本文を入力してください。");
+            // error = <p>タイトルと本文を入力してください。</p>;
+            setError(<p style={{ color: "red", fontWeight: "bold" }}>タイトルと本文を入力してください。</p>);
+            console.log(error);
+          } else {
+            props.onCreate(title, body);
+          }
         }}
       >
         <p>
@@ -81,6 +90,7 @@ function Create(props) {
         <p>
           <input type="submit" value="create"></input>
         </p>
+        {error}
       </form>
     </article>
   );
@@ -156,18 +166,31 @@ function App() {
     });
     content = <Article title={title} body={body}></Article>;
     contextControl = (
-      <li>
-        {" "}
-        <a
-          href={"/update/" + id}
-          onClick={(e) => {
-            e.preventDefault();
-            setMode("UPDATE");
-          }}
-        >
-          UPDATE
-        </a>
-      </li>
+      <>
+        <li>
+          {" "}
+          <a
+            href={"/update/" + id}
+            onClick={(e) => {
+              e.preventDefault();
+              setMode("UPDATE");
+            }}
+          >
+            UPDATE
+          </a>
+        </li>
+        <li>
+          <input
+            type="button"
+            value="delete"
+            onClick={() => {
+              const newTopics = topics.filter((t) => t.id !== id);
+              setTopics(newTopics);
+              setMode("WELCOME");
+            }}
+          ></input>
+        </li>
+      </>
     );
   } else if (mode === "CREATE") {
     content = (
